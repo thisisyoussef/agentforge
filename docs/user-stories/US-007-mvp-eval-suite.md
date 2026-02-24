@@ -56,13 +56,13 @@ Local sources to read before writing any code:
 
 ## Eval Dataset: 20 cases across 5 categories
 
-| Category | Count | Example input | Expected tool |
-|----------|-------|---------------|---------------|
-| Market Data | 5 | "Price of AAPL" | `market_data_fetch` |
-| Portfolio Analysis | 5 | "What's my portfolio risk?" | `portfolio_risk_analysis` |
-| Compliance | 5 | "Run an ESG compliance check" | `compliance_check` |
-| Multi-turn | 3 | Turn 1 → Turn 2 (context) | varies |
-| Error Recovery | 2 | "" / "Write me a poem" | null (no tool) |
+| Category | Count | Example input | Expected tool | Source Story |
+|----------|-------|---------------|---------------|--------------|
+| Market Data | 5 | "Price of AAPL" | `market_data_fetch` | US-003 |
+| Portfolio Analysis | 5 | "What's my portfolio risk?" | `portfolio_risk_analysis` | US-004 |
+| Compliance | 5 | "Run an ESG compliance check" | `compliance_check` | US-005 |
+| Multi-turn | 3 | Turn 1 → Turn 2 (context) | varies | US-006 |
+| Error Recovery | 2 | "" / "Write me a poem" | null (no tool) | US-006 |
 
 ## Evaluators (Rubric Scoring 0-1)
 

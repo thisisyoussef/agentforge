@@ -309,6 +309,20 @@ npx nx build client
 - Edge case 2: User asks non-finance question (agent should still respond)
 - Edge case 3: Very long message exceeding context limits
 
+## Eval Coverage (Layer 5 — LangSmith)
+
+This story's functionality is covered by **eval cases 1-5** (Market Data category) in the LangSmith eval harness (`ghostfolio/apps/api/src/app/agent/evals/dataset.ts`).
+
+| Eval Case | Input | Expected Tool | Key Assertions |
+|-----------|-------|---------------|----------------|
+| 1 | "What's the current price of AAPL?" | `market_data_fetch` | Contains AAPL, price > 0 |
+| 2 | "Compare MSFT and GOOGL prices" | `market_data_fetch` | Contains both MSFT and GOOGL |
+| 3 | "What's the PE ratio of TSLA?" | `market_data_fetch` | Contains TSLA data |
+| 4 | "Price of BTC-USD" | `market_data_fetch` | Handles crypto (error or data) |
+| 5 | "Price of INVALIDXYZ" | `market_data_fetch` | Graceful error, no crash |
+
+Design doc: `docs/plans/2026-02-24-agent-eval-harness-design.md`
+
 ## Notes
 - Does NOT depend on US-002 — `market_data_fetch` uses Yahoo Finance, not Ghostfolio.
 - Chat UI enables manual testing of all subsequent tools (US-004, US-005).
