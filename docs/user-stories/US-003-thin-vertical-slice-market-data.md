@@ -1,4 +1,4 @@
-# US-003: Thin Vertical Slice — Market Data Tool + LangGraph + Chat UI
+# US-003: Agent NestJS Module + Market Data Tool + Angular Chat UI
 
 ## Status
 - State: `todo`
@@ -17,43 +17,47 @@
 > As Alex, I want a working chat UI from day one so that I can manually test every tool as it's built.
 
 ## Goal
-Deliver the foundational agent stack: LangGraph state machine, first tool (`market_data_fetch`), LangSmith tracing, `/agent/chat` endpoint, and a minimal browser chat UI. This establishes the pattern every subsequent tool follows and enables manual testing from the browser.
+Deliver the foundational agent stack inside the Ghostfolio fork: new `agent` NestJS module with LangGraph state machine, first tool (`market_data_fetch`), LangSmith tracing, `POST /api/v1/agent/chat` endpoint, and a new Angular chat page. This establishes the pattern every subsequent tool follows and enables manual testing from the browser. Since the agent lives inside Ghostfolio, it deploys as part of the same service.
 
 ## Scope
 In scope:
-1. Python dependencies: `langchain-anthropic`, `langgraph`, `langsmith`, `yfinance`, `pydantic`.
-2. `market_data_fetch` tool with typed input/output schemas.
-3. LangGraph state machine (reasoning → tool → respond).
-4. `POST /agent/chat` endpoint.
-5. LangSmith tracing via env vars.
-6. Minimal chat UI (vanilla HTML/CSS/JS, dark theme).
-7. Five eval test cases (3 happy, 1 edge, 1 error).
+1. npm dependencies: `@langchain/langgraph`, `@langchain/anthropic`, `@langchain/core`, `langsmith`, `yahoo-finance2`.
+2. New `agent` NestJS module in `ghostfolio/apps/api/src/app/agent/`.
+3. `market_data_fetch` tool with typed input/output (Zod schemas or TypeScript interfaces).
+4. LangGraph `StateGraph` (reasoning → tool → respond).
+5. `POST /api/v1/agent/chat` endpoint via `AgentController`.
+6. LangSmith tracing via env vars (`LANGSMITH_API_KEY`, `LANGCHAIN_TRACING_V2`).
+7. New Angular chat page at `/agent` route in `ghostfolio/apps/client/`.
+8. Five eval test cases (3 happy, 1 edge, 1 error).
 
 Out of scope:
 1. Multiple tools (only market_data_fetch).
 2. Conversation memory (single-turn only).
 3. Error handling middleware (basic try/catch only).
-4. Rich UI framework.
+4. Authentication for agent endpoint (open for MVP).
 
 ## Pre-Implementation Audit
 Local sources to read before writing any code:
-1. `backend/app/main.py` — existing FastAPI app structure, CORS config
-2. `backend/requirements.txt` — current dependencies
-3. `backend/.env.example` — env var names for LLM and LangSmith
-4. `frontend/index.html` — current placeholder to replace
-5. `docs/IMPLEMENTATION_STRATEGY.md` — Phase 1 exit gate and tool schema guidance
+1. `ghostfolio/apps/api/src/app/app.module.ts` — root module to register new agent module
+2. `ghostfolio/apps/api/src/app/health/health.controller.ts` — pattern for simple controller
+3. `ghostfolio/apps/api/src/app/portfolio/portfolio.controller.ts` — pattern for API endpoints
+4. `ghostfolio/apps/client/src/app/app-routing.module.ts` — client routing config
+5. `ghostfolio/apps/client/src/app/pages/` — pattern for new Angular page
+6. `ghostfolio/package.json` — existing dependencies, Nx scripts
+7. `docs/IMPLEMENTATION_STRATEGY.md` — Phase 1 exit gate and module structure
 
 ## Preparation Phase (Mandatory)
 1. Read local code listed in Pre-Implementation Audit.
 2. Web-check relevant docs before coding:
-   - LangGraph quickstart and StateGraph API
-   - `langchain-anthropic` ChatAnthropic tool binding
-   - LangSmith tracing setup (env vars)
-   - `yfinance` Ticker API (`.info`, `.fast_info`)
-   - Pydantic v2 model definition
+   - `@langchain/langgraph` JS quickstart and StateGraph API
+   - `@langchain/anthropic` ChatAnthropic tool binding (JS)
+   - LangSmith tracing setup (env vars for JS/TS)
+   - `yahoo-finance2` npm API (`.quote()`, `.quoteSummary()`)
+   - NestJS module/controller/service pattern
+   - Angular component + routing setup
 3. Write Preparation Notes with:
-   - Expected `yfinance` response shape for a ticker
-   - LangGraph state schema design
+   - Expected `yahoo-finance2` response shape for a ticker
+   - LangGraph state schema design (TypeScript)
    - Agent chat endpoint request/response contract
    - Planned failing tests
 
@@ -64,18 +68,26 @@ Local docs/code reviewed:
 1.
 2.
 
-Expected yfinance data shape:
-```python
-# ticker.info keys we need:
-# currentPrice, trailingPE, dividendYield, marketCap,
-# fiftyTwoWeekHigh, fiftyTwoWeekLow, shortName
+Expected yahoo-finance2 data shape:
+```typescript
+// yahoo-finance2 quote() result keys we need:
+// regularMarketPrice, trailingPE, dividendYield, marketCap,
+// fiftyTwoWeekHigh, fiftyTwoWeekLow, shortName, symbol
 ```
 
 Agent chat endpoint contract:
 ```
-POST /agent/chat
+POST /api/v1/agent/chat
 Request:  {"message": "...", "session_id": "..."}
 Response: {"response": "...", "tool_calls": [...], "session_id": "..."}
+```
+
+LangGraph state design:
+```typescript
+interface AgentState {
+  messages: BaseMessage[];
+  toolCalls?: ToolCall[];
+}
 ```
 
 Error-handling decisions:
@@ -83,15 +95,15 @@ Error-handling decisions:
 2.
 
 Planned failing tests:
-1. `test_market_data_fetch_valid_symbol` — AAPL returns price > 0
-2. `test_market_data_fetch_invalid_symbol` — XYZNOTREAL returns error info
-3. `test_agent_chat_market_question` — chat endpoint returns response with tool call
-4. `test_agent_chat_empty_message` — empty message returns 200 with error
-5. `test_market_data_multi_symbol` — MSFT+GOOGL returns both
+1. `market-data.tool.spec.ts: should return price > 0 for valid symbol (AAPL)`
+2. `market-data.tool.spec.ts: should return error info for invalid symbol`
+3. `agent.controller.spec.ts: should return response with tool call for market question`
+4. `agent.controller.spec.ts: should return 200 with error message for empty input`
+5. `market-data.tool.spec.ts: should return data for multiple symbols`
 
 ## UX Script
 Happy path:
-1. User opens frontend URL in browser and sees chat interface.
+1. User navigates to `/agent` page in Ghostfolio and sees chat interface.
 2. User types "What is the current price of AAPL?" and clicks send.
 3. Loading indicator appears.
 4. Response shows AAPL price and tool call details (collapsible).
@@ -103,7 +115,7 @@ Error path:
 3. User can ask another question without page refresh.
 
 ## Preconditions
-- [ ] US-001 complete (backend + frontend deployed on Railway)
+- [ ] US-001 complete (Ghostfolio fork + Railway deployment exists)
 - [ ] `ANTHROPIC_API_KEY` available (for Claude Sonnet)
 - [ ] `LANGSMITH_API_KEY` available (for tracing)
 
@@ -111,50 +123,55 @@ Error path:
 Write tests first. Red → Green → Refactor.
 
 ### Test files to create/modify
-1. `backend/tests/test_market_data.py`
-   - `test_fetch_valid_symbol` — `market_data_fetch("AAPL")` returns dict with `price` > 0
-   - `test_fetch_invalid_symbol` — `market_data_fetch("XYZNOTREAL")` returns error info, no exception
-   - `test_fetch_multiple_symbols` — `market_data_fetch(["MSFT", "GOOGL"])` returns data for both
-2. `backend/tests/test_agent_chat.py`
-   - `test_chat_market_question` — `POST /agent/chat` with "What is the price of AAPL?" returns 200, response contains price, `tool_calls` non-empty
-   - `test_chat_empty_message` — `POST /agent/chat` with `""` returns 200, not 500
+1. `ghostfolio/apps/api/src/app/agent/tools/market-data.tool.spec.ts`
+   - `should return price > 0 for valid symbol (AAPL)`
+   - `should return error info for invalid symbol (XYZNOTREAL)`
+   - `should return data for multiple symbols (MSFT, GOOGL)`
+2. `ghostfolio/apps/api/src/app/agent/agent.controller.spec.ts`
+   - `should return response with tool call for market question`
+   - `should return 200 with error message for empty input`
 
 ### Red → Green → Refactor sequence
-1. Create test files with all 5 tests. Run — all fail (red).
-2. Implement `backend/app/tools/market_data.py` — `test_fetch_*` tests go green.
-3. Implement `backend/app/agent/graph.py` and update `main.py` — `test_chat_*` tests go green.
+1. Create test files with all 5 tests. Run `npx nx test api --testPathPattern=agent` — all fail (red).
+2. Implement `market-data.tool.ts` → tool tests go green.
+3. Implement `agent.service.ts` (LangGraph state machine) and `agent.controller.ts` → controller tests go green.
 4. Refactor: extract shared schemas, clean up imports.
 
 ## Step-by-step Implementation Plan
 
-### Agent Infrastructure
-1. Add deps to `backend/requirements.txt`.
-2. Create `backend/app/tools/__init__.py`.
-3. Create `backend/app/tools/market_data.py`:
-   - `MarketDataInput` schema: `symbols: list[str]`, `metrics: list[str] | None`.
-   - `MarketDataOutput` schema: per-symbol dict with `price`, `pe_ratio`, `dividend_yield`, `market_cap`, `52_week_range`.
-   - `market_data_fetch` function using `yfinance`.
+### Agent NestJS Module
+1. Install npm deps in `ghostfolio/`: `@langchain/langgraph`, `@langchain/anthropic`, `@langchain/core`, `langsmith`, `yahoo-finance2`.
+2. Create `ghostfolio/apps/api/src/app/agent/agent.module.ts` — NestJS module.
+3. Create `ghostfolio/apps/api/src/app/agent/tools/market-data.tool.ts`:
+   - `MarketDataInput` interface: `symbols: string[]`, `metrics?: string[]`.
+   - `MarketDataOutput` interface: per-symbol dict with `price`, `peRatio`, `dividendYield`, `marketCap`, `fiftyTwoWeekRange`.
+   - `marketDataFetch` function using `yahoo-finance2`.
    - Handle invalid symbols gracefully.
-4. Create `backend/app/agent/__init__.py`.
-5. Create `backend/app/agent/graph.py`:
-   - `AgentState` TypedDict with `messages: list`.
-   - Reasoning node (Claude Sonnet with tool binding).
+4. Create `ghostfolio/apps/api/src/app/agent/agent.service.ts`:
+   - `AgentState` interface with `messages: BaseMessage[]`.
+   - Reasoning node (ChatAnthropic with tool binding).
    - Tool execution node.
    - LangGraph `StateGraph` with conditional routing.
-6. Add `POST /agent/chat` endpoint to `main.py`.
-7. Configure LangSmith env vars.
+5. Create `ghostfolio/apps/api/src/app/agent/agent.controller.ts`:
+   - `POST /api/v1/agent/chat` accepting `{ message: string, session_id: string }`.
+   - Returns `{ response: string, tool_calls: any[], session_id: string }`.
+6. Register `AgentModule` in `app.module.ts`.
+7. Configure LangSmith env vars on Railway.
 
-### Chat UI
-8. Replace `frontend/index.html`:
-   - Dark theme, text input + send button, scrollable message history.
-   - Tool calls as collapsible `<details>`.
-   - Loading indicator.
-   - `session_id` via `crypto.randomUUID()` in `sessionStorage`.
-   - Calls `POST /agent/chat` on backend URL.
+### Angular Chat Page
+8. Create `ghostfolio/apps/client/src/app/pages/agent/` directory:
+   - `agent-page.component.ts` — page component.
+   - `agent-page.component.html` — chat template (dark theme, input + send, message list).
+   - `agent-page.component.scss` — styling.
+9. Create `ghostfolio/apps/client/src/app/components/chat/` directory:
+   - `chat.component.ts` — reusable chat widget.
+   - `chat.component.html` — message bubbles, tool call details, loading.
+   - `chat.component.scss` — chat styling.
+10. Add `/agent` route to client routing module.
 
 ### Deploy
-9. Deploy backend and frontend to Railway.
-10. Verify chat UI and LangSmith traces.
+11. Commit, push, Railway auto-deploys Ghostfolio (single service).
+12. Verify chat UI at `https://<ghostfolio-domain>/agent` and LangSmith traces.
 
 ## Implementation Details
 _(Fill during execution.)_
@@ -164,13 +181,13 @@ Implemented files:
 2.
 
 Key interfaces:
-```python
-# Fill during implementation
+```typescript
+// Fill during implementation
 ```
 
 ## Acceptance Criteria
-- [ ] AC1: Chat UI accessible at frontend Railway URL — can send messages and see responses.
-- [ ] AC2: `POST /agent/chat` with market data question returns structured response with real price data.
+- [ ] AC1: Chat UI accessible at Ghostfolio `/agent` page — can send messages and see responses.
+- [ ] AC2: `POST /api/v1/agent/chat` with market data question returns structured response with real price data.
 - [ ] AC3: Tool calls visible in response payload and in chat UI.
 - [ ] AC4: LangSmith project shows at least one traced run with tool call nodes.
 - [ ] AC5: All 5 eval test cases pass.
@@ -178,46 +195,50 @@ Key interfaces:
 
 ## Local Validation
 ```bash
-# Lint (if configured)
-cd backend && python -m py_compile app/main.py app/tools/market_data.py app/agent/graph.py
+# Install new dependencies
+cd ghostfolio && npm install
+
+# Lint
+npx nx lint api
 
 # Tests (story-specific)
-cd backend && pytest tests/test_market_data.py tests/test_agent_chat.py -v
+npx nx test api --testPathPattern=agent
 
-# Full test suite
-cd backend && pytest -q
+# Full API test suite
+npx nx test api
 
-# Build check (Dockerfile)
-cd backend && docker build -t agentforge-backend .
+# Build check
+npx nx build api
+npx nx build client
 ```
 
 ## Deployment Handoff (Mandatory)
-1. Commit all backend + frontend changes.
+1. Commit all changes in `ghostfolio/`.
 2. Push to `main`.
-3. Railway auto-deploys both services.
+3. Railway auto-deploys Ghostfolio service (single deployment covers API + client).
 4. Verify health endpoint still works.
-5. Record URLs and commit SHA in Checkpoint Result.
+5. Record URL and commit SHA in Checkpoint Result.
 
 ## How To Verify In Prod (Required)
 - Production URL(s):
-  - Frontend (chat UI): `https://<frontend-domain>`
-  - Backend (API): `https://<backend-domain>`
+  - Ghostfolio (includes agent): `https://ghostfolio-production-c1c7.up.railway.app`
+  - Agent chat page: `https://ghostfolio-production-c1c7.up.railway.app/agent`
 - Endpoint(s) to call:
-  - `POST /agent/chat` with `{"message": "What is the price of AAPL?", "session_id": "test-1"}`
+  - `POST /api/v1/agent/chat` with `{"message": "What is the price of AAPL?", "session_id": "test-1"}`
 - Expected results:
-  - Chat UI renders with dark theme, input field, send button
+  - Chat page renders at `/agent` with input field and send button
   - Agent returns response with AAPL price (a real number)
   - Response includes `tool_calls` with `market_data_fetch`
   - LangSmith shows traced run
 - Failure signals:
-  - Chat UI blank or no response
-  - 500 from backend
+  - `/agent` page blank or 404
+  - 500 from API
   - No traces in LangSmith
 - Rollback action:
-  - Revert to previous Railway deployment
+  - Revert to previous Ghostfolio deployment on Railway
 
 ## User Checkpoint Test
-1. Open frontend URL → chat UI renders with dark theme.
+1. Open Ghostfolio → navigate to `/agent` → chat UI renders.
 2. Type "What is the current price of AAPL?" → response shows real price.
 3. Click tool call details → see structured market data.
 4. Type "XYZNOTREAL price" → graceful error, no crash.
@@ -226,14 +247,13 @@ cd backend && docker build -t agentforge-backend .
 ## Checkpoint Result
 _(Fill after deployment.)_
 - Commit SHA:
-- Frontend URL:
-- Backend URL:
+- Ghostfolio URL:
 - User Validation: `passed | failed | blocked`
 - Notes:
 
 ## Observability & Monitoring
 - Logs to check:
-  - Railway backend logs (agent execution, tool calls)
+  - Railway Ghostfolio logs (agent execution, tool calls)
 - Traces/metrics to check:
   - LangSmith: trace count, latency, tool success rate, token usage
 - Alert thresholds:
@@ -241,9 +261,10 @@ _(Fill after deployment.)_
   - Tool failure rate >20%
 
 ## Risks & Edge Cases
-- Risk 1: `yfinance` rate limiting or blocking from Railway IPs
-- Risk 2: Claude Sonnet API latency causing frontend timeout
-- Risk 3: LangSmith tracing overhead
+- Risk 1: `yahoo-finance2` rate limiting or blocking from Railway IPs
+- Risk 2: Claude Sonnet API latency causing timeout
+- Risk 3: NestJS module registration conflicts with existing Ghostfolio modules
+- Risk 4: Angular routing conflicts with existing Ghostfolio pages
 - Edge case 1: Yahoo Finance stale/missing data for some symbols
 - Edge case 2: User asks non-finance question (agent should still respond)
 - Edge case 3: Very long message exceeding context limits
@@ -252,4 +273,6 @@ _(Fill after deployment.)_
 - Does NOT depend on US-002 — `market_data_fetch` uses Yahoo Finance, not Ghostfolio.
 - Chat UI enables manual testing of all subsequent tools (US-004, US-005).
 - LangGraph state machine establishes the pattern all subsequent tools follow.
-- Use `langchain-anthropic` for Claude integration (provides automatic LangSmith tracing).
+- Agent module is registered but isolated — does NOT modify existing Ghostfolio modules.
+- Uses `@langchain/anthropic` for Claude integration (provides automatic LangSmith tracing).
+- Single Railway deployment: agent deploys with Ghostfolio, no separate service needed.
