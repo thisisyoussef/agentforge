@@ -1,9 +1,0 @@
-[build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
-
-[deploy]
-startCommand = "sh -c 'python -m http.server ${PORT:-8000} --bind 0.0.0.0 --directory /site'"
-healthcheckPath = "/"
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
