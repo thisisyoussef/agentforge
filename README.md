@@ -12,6 +12,7 @@ Deploy-first scaffold for the AgentForge project.
 - `WORKSPACE.md` master workspace operating model
 - `docs/CONTEXT.md` live environment/context snapshot
 - `docs/DEFINITION_OF_DONE.md` required completion checklist
+- `docs/IMPLEMENTATION_STRATEGY.md` overall phase-by-phase implementation plan
 
 ## Quickstart (local)
 
