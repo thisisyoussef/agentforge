@@ -5,7 +5,7 @@ Deploy-first scaffold for the AgentForge project.
 ## Structure
 - `docs/` project planning and assignment docs
 - `backend/` FastAPI API for Railway deployment
-- `frontend/` placeholder web UI for Vercel deployment
+- `frontend/` placeholder web UI for Railway deployment
 - `.github/workflows/ci.yml` CI checks
 - `DEPLOYMENT_SETUP.md` step-by-step platform setup
 
@@ -26,7 +26,7 @@ Then open `http://127.0.0.1:8000/health`.
 Open `frontend/index.html` directly in your browser.
 
 ## Deployment targets
-- Frontend: Vercel
+- Frontend: Railway
 - Backend: Railway
 - Database: Railway Postgres
 - Observability: LangSmith

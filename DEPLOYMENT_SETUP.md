@@ -1,7 +1,7 @@
-# Deploy-First Setup (Vercel + Railway + LangSmith)
+# Deploy-First Setup (Railway + Railway + LangSmith)
 
 This repository now includes a deployable baseline before feature implementation:
-- `frontend/` -> static site for Vercel
+- `frontend/` -> static site for Railway
 - `backend/` -> FastAPI service for Railway
 - `.github/workflows/ci.yml` -> backend test checks on PR/push
 
@@ -10,17 +10,16 @@ This repository now includes a deployable baseline before feature implementation
 - Docker fallback in `backend/Dockerfile`
 - Health endpoint at `GET /health`
 - Environment variable template in `backend/.env.example`
-- Vercel-ready static frontend in `frontend/`
+- Railway-ready static frontend in `frontend/railway.toml` + `frontend/Dockerfile`
 
 ## 2) What you need to do (account/platform setup)
-1. Create a Railway project for backend.
-2. Connect this GitHub repo and set root directory to `backend`.
-3. Add a Railway PostgreSQL service in the same project.
-4. Add backend env vars from `backend/.env.example`.
-5. Create a Vercel project for frontend.
-6. Connect this GitHub repo and set root directory to `frontend`.
-7. Add `NEXT_PUBLIC_API_BASE_URL` (or `API_BASE_URL`) in Vercel once backend URL is known.
-8. Create a LangSmith project and copy API key into Railway env vars.
+1. Create one Railway project.
+2. Add a `backend` service from this repo with root directory `backend`.
+3. Add a `frontend` service from this repo with root directory `frontend`.
+4. Add a Railway PostgreSQL service in the same project.
+5. Add backend env vars from `backend/.env.example`.
+6. Add frontend env var `API_BASE_URL` (once backend URL is known).
+7. Create a LangSmith project and copy API key into Railway backend env vars.
 
 ## 3) Recommended Railway environment variables (minimum)
 - `OPENAI_API_KEY`
@@ -32,7 +31,7 @@ This repository now includes a deployable baseline before feature implementation
 
 ## 4) Smoke test after deploy
 - Backend: open `https://<railway-domain>/health` -> should return `{ "status": "ok" }`
-- Frontend: open Vercel URL -> should show "AgentForge Deployment Baseline"
+- Frontend: open Railway frontend URL -> should show "AgentForge Deployment Baseline"
 - CI: confirm GitHub Actions `CI` workflow is green on `main`
 
 ## 5) Immediate next implementation steps
@@ -41,3 +40,15 @@ This repository now includes a deployable baseline before feature implementation
 3. Replace frontend placeholder with chat UI.
 4. Wire frontend calls to backend using `API_BASE_URL`.
 5. Add integration tests for at least one tool path.
+
+## 6) Fork strategy (recommended for this project)
+You should fork the original domain repo (for Finance, `Ghostfolio`) and build your agent contribution there.
+
+Recommended approach:
+1. Keep this `agentforge` repo as your planning/agent-app workspace.
+2. Fork the upstream domain repo to your GitHub account.
+3. Add upstream remote and sync regularly.
+4. Implement the domain-specific agent features in the fork.
+5. Link both repos in your final submission:
+   - this repo: planning, architecture, eval docs, deployment notes
+   - forked repo: concrete open-source contribution and PR history
