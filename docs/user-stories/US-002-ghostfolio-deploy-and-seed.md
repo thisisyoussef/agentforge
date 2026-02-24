@@ -200,7 +200,7 @@ Note: Yahoo Finance data source is listed but non-functional on Railway (symbol 
 4. Verify API key works by checking backend logs for successful Ghostfolio calls (in later stories).
 
 ## Checkpoint Result
-- Commit SHA: (pending commit)
+- Commit SHA: f580871
 - Ghostfolio URL: `https://ghostfolio-production-c1c7.up.railway.app`
 - User Validation: `passed`
 - Notes:
