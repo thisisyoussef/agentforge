@@ -1,66 +1,76 @@
-# Deploy-First Setup (Railway + Railway + LangSmith)
+# Deployment Setup — Railway + Ghostfolio Fork
 
-This repository now includes a deployable baseline before feature implementation:
-- `frontend/` -> static site for Railway
-- `backend/` -> FastAPI service for Railway
-- `.github/workflows/ci.yml` -> backend test checks on PR/push
+## Architecture
 
-## 1) What is already set up in code
-- Railway-ready backend start command in `backend/railway.toml`
-- Docker fallback in `backend/Dockerfile`
-- Health endpoint at `GET /health`
-- Environment variable template in `backend/.env.example`
-- Railway-ready static frontend in `frontend/railway.toml` + `frontend/Dockerfile`
+All code lives inside the Ghostfolio fork (`./ghostfolio`). One Railway project, three services:
+- **Postgres** — managed database
+- **Redis** — managed cache
+- **ghostfolio** — NestJS API + Angular client (single Dockerfile)
 
-## 2) What you need to do (account/platform setup)
-1. Create one Railway project.
-2. Add a `backend` service from this repo with root directory `backend`.
-3. Add a `frontend` service from this repo with root directory `frontend`.
-4. Add a Railway PostgreSQL service in the same project.
-5. Add backend env vars from `backend/.env.example`.
-6. Add frontend env var `API_BASE_URL` (once backend URL is known).
-7. Create a LangSmith project and copy API key into Railway backend env vars.
+## Railway Project
 
-## 3) Recommended Railway environment variables (minimum)
-- `OPENAI_API_KEY`
-- `MODEL_NAME` (default `gpt-5`)
-- `LANGSMITH_API_KEY`
-- `LANGSMITH_PROJECT=agentforge`
-- `LANGSMITH_TRACING=true`
-- `DATABASE_URL` (Railway will provide this for Postgres)
+- **Project name**: `faithful-youthfulness`
+- **Project ID**: `ad54fa78-44fe-4b35-bd5b-f3fc8e81e276`
+- **Environment**: `production` (`8e84fd91-90f8-4625-9967-f3c3d1a82dea`)
+- **Ghostfolio service ID**: `337535e9-3530-4250-aba2-4f724df0405c`
+- **Production URL**: `https://ghostfolio-production-e8d1.up.railway.app`
 
-## 4) Smoke test after deploy
-- Backend: open `https://<railway-domain>/health` -> should return `{ "status": "ok" }`
-- Frontend: open Railway frontend URL -> should show "AgentForge Deployment Baseline"
-- CI: confirm GitHub Actions `CI` workflow is green on `main`
+## Required Environment Variables (ghostfolio service)
 
-## 5) Immediate next implementation steps
-1. Add real API routes in `backend/app/` for tool execution.
-2. Add DB migrations and schema for traces/audit artifacts.
-3. Replace frontend placeholder with chat UI.
-4. Wire frontend calls to backend using `API_BASE_URL`.
-5. Add integration tests for at least one tool path.
+| Variable | Source | Description |
+|----------|--------|-------------|
+| `DATABASE_URL` | Postgres internal URL | `postgresql://..@postgres.railway.internal:5432/railway` |
+| `REDIS_HOST` | Redis internal domain | `redis.railway.internal` |
+| `REDIS_PORT` | Redis port | `6379` |
+| `REDIS_PASSWORD` | Redis auto-generated | From Redis service variables |
+| `ACCESS_TOKEN_SALT` | Random hex string | `openssl rand -hex 32` |
+| `JWT_SECRET_KEY` | Random hex string | `openssl rand -hex 32` |
+| `PORT` | Fixed | `3333` |
 
-## 6) Fork strategy (recommended for this project)
-You should fork the original domain repo and build your agent contribution there.
+## Deployment Commands
 
-Upstream source repository:
-- `https://github.com/ghostfolio/ghostfolio.git`
+```bash
+# From the ghostfolio directory (not agentforge root)
+cd ghostfolio
 
-Recommended approach:
-1. Keep this `agentforge` repo as your planning/agent-app workspace.
-2. Fork `ghostfolio/ghostfolio` to your GitHub account.
-3. Clone your fork and add upstream remote:
-   - `git clone https://github.com/<your-username>/ghostfolio.git`
-   - `cd ghostfolio`
-   - `git remote add upstream https://github.com/ghostfolio/ghostfolio.git`
-   - `git remote -v`
-4. Sync with upstream regularly:
-   - `git fetch upstream`
-   - `git checkout main`
-   - `git merge upstream/main`
-   - `git push origin main`
-5. Implement the domain-specific agent features in your fork.
-6. Link both repos in your final submission:
-   - this repo: planning, architecture, eval docs, deployment notes
-   - forked repo: concrete open-source contribution and PR history
+# Link CLI to project (first time or after re-link)
+railway link --project faithful-youthfulness
+railway service ghostfolio
+
+# Deploy
+railway up --detach
+
+# Check logs
+railway logs 2>&1 &; LPID=$!; sleep 10; kill $LPID 2>/dev/null; wait $LPID 2>/dev/null
+
+# Check variables
+railway variables
+```
+
+## Build Process
+
+The Dockerfile handles everything:
+1. **Builder stage**: `npm install` → `npm run build:production` (builds API + client)
+2. **Dist stage**: copies `dist/apps/api/`, runs `npm install` on generated package.json
+3. **Runtime stage**: `node:22-slim`, runs migrations + seed + `node main`
+
+## Webpack Externals
+
+Packages with complex internals must be marked as externals in `apps/api/webpack.config.js`:
+- `yahoo-finance2` — cookie/fetch handlers break when bundled
+
+## Smoke Test
+
+After deployment:
+1. Open `https://ghostfolio-production-e8d1.up.railway.app` → Ghostfolio landing page
+2. Navigate to `/en/agent` → Agent chat UI
+3. Type "What is the price of AAPL?" → Real price data returned
+
+## Rollback
+
+```bash
+# List deployments
+railway logs --deployment <deployment-id>
+
+# Railway dashboard → service → deployments → click previous → redeploy
+```

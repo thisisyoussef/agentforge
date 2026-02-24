@@ -254,8 +254,8 @@ npx nx build client
 
 ## How To Verify In Prod (Required)
 - Production URL(s):
-  - Ghostfolio (includes agent): `https://ghostfolio-production-c1c7.up.railway.app`
-  - Agent chat page: `https://ghostfolio-production-c1c7.up.railway.app/agent`
+  - Ghostfolio (includes agent): `https://ghostfolio-production-e8d1.up.railway.app`
+  - Agent chat page: `https://ghostfolio-production-e8d1.up.railway.app/agent`
 - Endpoint(s) to call:
   - `POST /api/v1/agent/chat` with `{"message": "What is the price of AAPL?", "session_id": "test-1"}`
 - Expected results:
@@ -278,16 +278,18 @@ npx nx build client
 5. Check LangSmith → trace visible.
 
 ## Checkpoint Result
-- Commit SHA: ghostfolio `deaaade82`; agentforge `d04d507`
-- Ghostfolio URL: `https://ghostfolio-production-c1c7.up.railway.app`
-- Agent chat page: `https://ghostfolio-production-c1c7.up.railway.app/en/agent`
-- Railway deployment: `e00033ec-b305-4c02-ae40-63aba22b6d92` (SUCCESS)
+- Commit SHA: ghostfolio `a22cfa042` (webpack externals fix); agentforge `4f17612` (build verification docs)
+- Railway project: `faithful-youthfulness` (`ad54fa78-44fe-4b35-bd5b-f3fc8e81e276`)
+- Ghostfolio URL: `https://ghostfolio-production-e8d1.up.railway.app`
+- Agent chat page: `https://ghostfolio-production-e8d1.up.railway.app/en/agent`
+- Railway deployment: `bf2e0c41` (pending)
 - User Validation: `pending` — awaiting browser verification
 - Notes:
   - MVP uses pattern matching instead of LLM (LangGraph deferred to future story)
   - 5/5 tests passing locally
   - Agent route registered: `POST /api/v1/agent/chat`
-  - Rollback: revert to Railway deployment `b2f88a04` (pre-agent)
+  - Fixed yahoo-finance2 "fetch failed" by marking as webpack external
+  - Migrated from old Railway project to faithful-youthfulness
 
 ## Observability & Monitoring
 - Logs to check:
