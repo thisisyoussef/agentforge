@@ -39,7 +39,8 @@ Do not assume user priorities on timeline or scale. After each section, pause fo
 - Always deploy to production before closing the task.
 - Follow `./DEPLOYMENT_SETUP.md`.
 - Assume user validates every change in production.
-- Always include direct prod checks: exact URL(s), endpoint(s), expected output/value, and clear success/failure signals.
+- Always include direct prod checks with browser-first verification: exact page URL(s), what to click/view, expected UI/result, and clear success/failure signals.
+- Do not provide `curl` or terminal verification commands unless the user explicitly asks for them.
 
 ## Definition of Done (required checklist)
 A task is only done when all are true:
@@ -48,8 +49,8 @@ A task is only done when all are true:
 - [ ] Code committed and pushed to remote.
 - [ ] Production deployment completed successfully.
 - [ ] Production verification executed with explicit evidence:
-  - [ ] URL(s) checked
-  - [ ] endpoint(s)/command(s) run
-  - [ ] expected output observed
+  - [ ] URL(s) opened in browser
+  - [ ] expected page state/output observed
+  - [ ] success/failure outcome recorded
 - [ ] Rollback path identified for the change.
 - [ ] Handoff includes: Story ID, commit SHA, deployed URL(s), verification result.
