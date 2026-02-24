@@ -74,3 +74,12 @@ Ask if I want one of two options:
 2. **SMALL CHANGE**: Work through interactively ONE question per review section.
 
 **FOR EACH STAGE OF REVIEW:** Output the explanation and pros and cons of each stage's questions AND your opinionated recommendation and why, and then use AskUserQuestion. NUMBER issues and give LETTERS for options. When using AskUserQuestion, make sure each option clearly labels the issue NUMBER and option LETTER so the user doesn't get confused. Make the recommended option always the 1st option.
+
+### Additional Instructions
+
+- Always commit and push changes to the repository when done.
+- After every completed change, always deploy to production before closing the task.
+- Follow the deployment process in `/Users/youss/Development/gauntlet/agentforge/DEPLOYMENT_SETUP.md`.
+- Assume the user validates every change in production; always provide clear "How to verify in prod" steps.
+- Surface direct checks every handoff: exact production URL(s), endpoint(s), expected response/value, and clear success/failure criteria.
+- Build by user story: always reference and follow steps from `/Users/youss/Development/gauntlet/agentforge/docs/user-stories/` and report progress by story ID.

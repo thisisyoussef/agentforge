@@ -62,3 +62,8 @@ FOR EACH STAGE OF REVIEW: output the explanation and pros and cons of each stage
 
 Additional instruction:
 • Always commit and push changes to the repository when done.
+• After every completed change, always deploy to production before closing the task.
+• Follow the deployment process in /Users/youss/Development/gauntlet/agentforge/DEPLOYMENT_SETUP.md.
+• Assume the user validates every change in production; include clear "How to verify in prod" steps in each handoff.
+• Surface direct checks for the user every time: exact production URL(s), endpoint(s), expected response/value, and what success/failure looks like.
+• Build work by following user stories in /Users/youss/Development/gauntlet/agentforge/docs/user-stories/. Pick a story, execute its steps in order, and report progress by story ID.
