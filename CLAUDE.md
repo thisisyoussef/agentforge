@@ -59,9 +59,10 @@ Do not assume user priorities on timeline or scale. After each section, pause fo
 - This repo (`agentforge`) is the master coordination workspace for docs, stories, deployment runbooks, and tracking.
 - **All implementation happens in `./ghostfolio`** — a git submodule pointing to our fork of `https://github.com/ghostfolio/ghostfolio.git`.
 - Agent code lives inside the Ghostfolio fork as new NestJS modules (API: `apps/api/src/app/agent/`) and Angular components (client: `apps/client/src/app/`).
-- Language: **TypeScript**. Agent framework: **@langchain/langgraph** (JS). Tests: **Jest via Nx**.
+- Language: **TypeScript**. Agent framework: **@langchain/langgraph** (JS). Tests: **Jest via Nx** (Layers 1-4), **LangSmith eval SDK** (Layer 5).
 - Build by user story from `./docs/user-stories/`, execute steps in order, and report status by Story ID.
 - Keep planning/eval docs here; keep feature code/tests/PR work in `./ghostfolio`.
+- **Eval harness**: `ghostfolio/apps/api/src/app/agent/evals/` — LangSmith-based production eval suite (20 cases, rubric scoring). See `docs/plans/2026-02-24-agent-eval-harness-design.md`.
 
 ## Submodule handling
 ```bash
