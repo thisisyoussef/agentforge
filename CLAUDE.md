@@ -28,6 +28,15 @@ Every story must include:
 - **TDD Plan**: explicit list of test files, test cases, and the order they will be written.
 - **Local Validation**: lint, test, and build commands that must all pass before deployment.
 
+## Build verification — mandatory
+Unit tests alone do not prove production readiness. After Green phase:
+1. **Production build**: Run `npx nx build api --configuration=production` and verify it completes.
+2. **Bundle smoke test**: Verify the compiled `dist/apps/api/main.js` can load without errors: `node -e "require('./dist/apps/api/main.js')"` (may fail on missing DB, but must not fail on missing modules).
+3. **External dependency check**: Any npm package that uses native bindings, complex internal module structure (cookie managers, fetch wrappers), or dynamic `require()` calls MUST be marked as a webpack external in `apps/api/webpack.config.js`. Examples: `yahoo-finance2`, any package with `.node` binaries.
+4. **Generated package.json audit**: After production build, verify `dist/apps/api/package.json` includes all runtime dependencies that were marked as externals.
+
+This catches the class of bugs where tests pass (because they mock externals) but production fails (because webpack mangled the dependency).
+
 ## Review protocol (when reviewing/planning before code changes)
 - Explain concrete tradeoffs for each issue/recommendation.
 - Provide an opinionated recommendation.
