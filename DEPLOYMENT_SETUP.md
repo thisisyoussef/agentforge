@@ -42,13 +42,25 @@ This repository now includes a deployable baseline before feature implementation
 5. Add integration tests for at least one tool path.
 
 ## 6) Fork strategy (recommended for this project)
-You should fork the original domain repo (for Finance, `Ghostfolio`) and build your agent contribution there.
+You should fork the original domain repo and build your agent contribution there.
+
+Upstream source repository:
+- `https://github.com/ghostfolio/ghostfolio.git`
 
 Recommended approach:
 1. Keep this `agentforge` repo as your planning/agent-app workspace.
-2. Fork the upstream domain repo to your GitHub account.
-3. Add upstream remote and sync regularly.
-4. Implement the domain-specific agent features in the fork.
-5. Link both repos in your final submission:
+2. Fork `ghostfolio/ghostfolio` to your GitHub account.
+3. Clone your fork and add upstream remote:
+   - `git clone https://github.com/<your-username>/ghostfolio.git`
+   - `cd ghostfolio`
+   - `git remote add upstream https://github.com/ghostfolio/ghostfolio.git`
+   - `git remote -v`
+4. Sync with upstream regularly:
+   - `git fetch upstream`
+   - `git checkout main`
+   - `git merge upstream/main`
+   - `git push origin main`
+5. Implement the domain-specific agent features in your fork.
+6. Link both repos in your final submission:
    - this repo: planning, architecture, eval docs, deployment notes
    - forked repo: concrete open-source contribution and PR history

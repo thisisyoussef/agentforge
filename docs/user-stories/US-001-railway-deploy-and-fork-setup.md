@@ -22,6 +22,7 @@ so that I can validate changes in production continuously and contribute to the 
 - Configure minimum production env vars
 - Verify public URLs and health checks
 - Configure fork + upstream remotes for the target domain repo
+- Pin upstream domain repo to `https://github.com/ghostfolio/ghostfolio.git`
 
 ### Out of scope
 - Implementing domain features
@@ -40,7 +41,7 @@ so that I can validate changes in production continuously and contribute to the 
 4. Add env vars from `backend/.env.example`.
 5. Deploy both services and capture production URLs.
 6. Run smoke checks for backend health and frontend page.
-7. Fork the target upstream domain repo (e.g. Ghostfolio).
+7. Fork `https://github.com/ghostfolio/ghostfolio.git` into your GitHub account.
 8. Clone fork locally and add `upstream` remote.
 9. Document fork URLs/remotes for future story execution.
 
@@ -76,11 +77,18 @@ so that I can validate changes in production continuously and contribute to the 
 - Exact commands:
 ```bash
 curl -i https://<backend-domain>/health
+
+# Fork verification
+cd /path/to/ghostfolio
+git remote -v
 ```
 - Expected results:
   - HTTP `200`
   - JSON body: `{"status":"ok"}`
   - Frontend page contains text: `AgentForge Deployment Baseline`
+  - `git remote -v` includes:
+    - `origin https://github.com/<your-username>/ghostfolio.git`
+    - `upstream https://github.com/ghostfolio/ghostfolio.git`
 - Failure signals:
   - Non-200 health response
   - Timeout or DNS failure
