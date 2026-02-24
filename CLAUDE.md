@@ -1,92 +1,14 @@
 # CLAUDE.md
 
-## Project Overview
+This file is a pointer.
+Canonical instructions are in `./agents.md`.
 
-AgentForge — project documentation and planning repository.
+## Rule
+- Follow `./agents.md` as the source of truth.
+- If anything in this file conflicts with `./agents.md`, `./agents.md` takes precedence.
 
-## Review & Planning Prompts
-
-Review this plan thoroughly before making any code changes. For every issue or recommendation, explain the concrete tradeoffs, give me an opinionated recommendation, and ask for my input before assuming a direction.
-
-### Engineering Preferences
-
-Use these to guide all recommendations:
-
-- **DRY is important** — flag repetition aggressively.
-- **Well-tested code is non-negotiable** — I'd rather have too many tests than too few.
-- **"Engineered enough"** — not under-engineered (fragile, hacky) and not over-engineered (premature abstraction, unnecessary complexity).
-- **Handle more edge cases, not fewer** — thoughtfulness > speed.
-- **Bias toward explicit over clever.**
-
-### Architecture Review
-
-Evaluate:
-- Overall system design and component boundaries.
-- Dependency graph and coupling concerns.
-- Data flow patterns and potential bottlenecks.
-- Scaling characteristics and single points of failure.
-- Security architecture (auth, data access, API boundaries).
-
-### Code Quality Review
-
-Evaluate:
-- Code organization and module structure.
-- DRY violations — be aggressive here.
-- Error handling patterns and missing edge cases (call these out explicitly).
-- Technical debt hotspots.
-- Areas that are over-engineered or under-engineered relative to my preferences.
-
-### Test Review
-
-Evaluate:
-- Test coverage gaps (unit, integration, e2e).
-- Test quality and assertion strength.
-- Missing edge case coverage — be thorough.
-- Untested failure modes and error paths.
-
-### Performance Review
-
-Evaluate:
-- N+1 queries and database access patterns.
-- Memory usage concerns.
-- Caching opportunities.
-- Slow or high-complexity code paths.
-
-### Issue Reporting Format
-
-For every specific issue (bug, smell, design concern, or risk):
-- Describe the problem concretely, with file and line references.
-- Present 2-3 options, including "do nothing" where that's reasonable.
-- For each option, specify: implementation effort, risk, impact on other code, and maintenance burden.
-- Give your recommended option and why, mapped to my preferences above.
-- Then explicitly ask whether I agree or want to choose a different direction before proceeding.
-
-### Workflow and Interaction
-
-- Do not assume my priorities on timeline or scale.
-- After each section, pause and ask for my feedback before moving on.
-
-**BEFORE YOU START:**
-Ask if I want one of two options:
-
-1. **BIG CHANGE**: Work through this interactively, one section at a time (Architecture -> Code Quality -> Tests -> Performance) with at most 4 top issues in each section.
-
-2. **SMALL CHANGE**: Work through interactively ONE question per review section.
-
-**FOR EACH STAGE OF REVIEW:** Output the explanation and pros and cons of each stage's questions AND your opinionated recommendation and why, and then use AskUserQuestion. NUMBER issues and give LETTERS for options. When using AskUserQuestion, make sure each option clearly labels the issue NUMBER and option LETTER so the user doesn't get confused. Make the recommended option always the 1st option.
-
-### Additional Instructions
-
-- Always commit and push changes to the repository when done.
-- After every completed change, always deploy to production before closing the task.
-- Follow the deployment process in `/Users/youss/Development/gauntlet/agentforge/DEPLOYMENT_SETUP.md`.
-- Assume the user validates every change in production; always provide clear "How to verify in prod" steps.
-- Surface direct checks every handoff: exact production URL(s), endpoint(s), expected response/value, and clear success/failure criteria.
-- Build by user story: always reference and follow steps from `/Users/youss/Development/gauntlet/agentforge/docs/user-stories/` and report progress by story ID.
-
-### Master Workspace Model
-
-- This repo (`agentforge`) is the master coordination workspace for docs, stories, deployment runbooks, and tracking.
-- Product implementation happens in `/Users/youss/Development/gauntlet/agentforge/ghostfolio` (fork of `https://github.com/ghostfolio/ghostfolio.git`).
-- Build by executing user stories step-by-step from `/Users/youss/Development/gauntlet/agentforge/docs/user-stories/`.
-- Keep planning/eval/process docs in this repo; keep feature code/tests/PR work in `ghostfolio/`.
+## Workspace quick context
+- Coordination repo: `agentforge`
+- Product code repo: `./ghostfolio`
+- Deployment runbook: `./DEPLOYMENT_SETUP.md`
+- Story execution source: `./docs/user-stories/`

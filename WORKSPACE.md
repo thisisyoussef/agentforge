@@ -6,7 +6,10 @@ This repository is the master coordination workspace.
 - `ghostfolio/`: product code repository (your fork, with upstream set to `ghostfolio/ghostfolio`)
 - `docs/user-stories/`: source of truth for build order and acceptance
 - `DEPLOYMENT_SETUP.md`: deployment runbook (Railway)
-- `agents.md`, `AGENTS.md`, `CLAUDE.md`: agent operating instructions
+- `agents.md`: canonical agent operating instructions
+- `CLAUDE.md`, `cloud.md`: pointer files to canonical instructions
+- `docs/CONTEXT.md`: live workspace/deployment context snapshot
+- `docs/DEFINITION_OF_DONE.md`: completion checklist for every change
 
 ## Build flow (required)
 1. Pick next story in `docs/user-stories/`.

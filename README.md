@@ -10,6 +10,8 @@ Deploy-first scaffold for the AgentForge project.
 - `.github/workflows/ci.yml` CI checks
 - `DEPLOYMENT_SETUP.md` step-by-step platform setup
 - `WORKSPACE.md` master workspace operating model
+- `docs/CONTEXT.md` live environment/context snapshot
+- `docs/DEFINITION_OF_DONE.md` required completion checklist
 
 ## Quickstart (local)
 

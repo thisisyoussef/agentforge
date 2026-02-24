@@ -1,75 +1,55 @@
-#prompts
+# agents.md
 
-Review this plan thoroughly before making any code changes. For every issue or recommendation, explain the concrete tradeoffs, give me an opinionated recommendation, and ask for my input before assuming a direction.
+Canonical agent instructions for this workspace.
+If any instruction in other local instruction files conflicts with this file, this file wins.
 
-My engineering preferences (use these to guide your recommendations):
-• DRY is important, flag repetition aggressively.
-• Well-tested code is non-negotiable; I’d rather have too many tests than too few.
-• I want code that’s “engineered enough” — not under-engineered (fragile, hacky) and not over-engineered (premature abstraction, unnecessary complexity).
-• I err on the side of handling more edge cases, not fewer; thoughtfulness > speed.
-• Bias toward explicit over clever.
+## Engineering preferences
+- DRY is important; flag repetition aggressively.
+- Well-tested code is non-negotiable; prefer more tests over fewer.
+- Build code that is engineered enough: avoid both fragile hacks and premature abstraction.
+- Err toward handling edge cases thoughtfully.
+- Prefer explicit over clever.
 
-Architecture review
-Evaluate:
-• Overall system design and component boundaries.
-• Dependency graph and coupling concerns.
-• Data flow patterns and potential bottlenecks.
-• Scaling characteristics and single points of failure.
-• Security architecture (auth, data access, API boundaries).
+## Review protocol (when reviewing/planning before code changes)
+- Explain concrete tradeoffs for each issue/recommendation.
+- Provide an opinionated recommendation.
+- Ask for user input before assuming a direction.
 
-Code quality review
-Evaluate:
-• Code organization and module structure.
-• DRY violations — be aggressive here.
-• Error handling patterns and missing edge cases (call these out explicitly).
-• Technical debt hotspots.
-• Areas that are over-engineered or under-engineered relative to my preferences.
+Before starting a review, ask user to choose one mode:
+1. BIG CHANGE: interact section-by-section (Architecture -> Code Quality -> Tests -> Performance), max 4 top issues per section.
+2. SMALL CHANGE: one question per review section.
 
-Test review
-Evaluate:
-• Test coverage gaps (unit, integration, e2e).
-• Test quality and assertion strength.
-• Missing edge case coverage — be thorough.
-• Untested failure modes and error paths.
+For each issue found:
+- Include file and line reference.
+- Provide 2-3 options (including do nothing where reasonable).
+- For each option: implementation effort, risk, impact on other code, maintenance burden.
+- Put recommended option first.
+- Ask user whether to proceed with recommended option or choose another.
 
-Performance review
-Evaluate:
-• N+1 queries and database access patterns.
-• Memory usage concerns.
-• Caching opportunities.
-• Slow or high-complexity code paths.
+Do not assume user priorities on timeline or scale. After each section, pause for feedback.
 
-For each issue you find
-For every specific issue (bug, smell, design concern, or risk):
-• Describe the problem concretely, with file and line references.
-• Present 2–3 options, including “do nothing” where that’s reasonable.
-• For each option, specify: implementation effort, risk, impact on other code, and maintenance burden.
-• Give me your recommended option and why, mapped to my preferences above.
-• Then explicitly ask whether I agree or want to choose a different direction before proceeding.
+## Workspace model (authoritative)
+- This repo (`agentforge`) is the master coordination workspace for docs, stories, deployment runbooks, and tracking.
+- Product implementation happens in `./ghostfolio` (fork of `https://github.com/ghostfolio/ghostfolio.git`).
+- Build by user story from `./docs/user-stories/`, execute steps in order, and report status by Story ID.
+- Keep planning/eval docs here; keep feature code/tests/PR work in `./ghostfolio`.
 
-Workflow and interaction:
-• Do not assume my priorities on timeline or scale.
-• After each section, pause and ask for my feedback before moving on.
+## Delivery requirements (every completed change)
+- Always commit and push changes when done.
+- Always deploy to production before closing the task.
+- Follow `./DEPLOYMENT_SETUP.md`.
+- Assume user validates every change in production.
+- Always include direct prod checks: exact URL(s), endpoint(s), expected output/value, and clear success/failure signals.
 
-BEFORE YOU START:
-Ask if I want one of two options:
-
-1/ BIG CHANGE: Work through this interactively, one section at a time (Architecture → Code Quality → Tests → Performance) with at most 4 top issues in each section.
-
-2/ SMALL CHANGE: Work through interactively ONE question per review section.
-
-FOR EACH STAGE OF REVIEW: output the explanation and pros and cons of each stage’s questions AND your opinionated recommendation and why, and then use AskUserQuestion. Also NUMBER issues and then give LETTERS for options and when using AskUserQuestion make sure each option clearly labels the issue NUMBER and option LETTER so the user doesn’t get confused. Make the recommended option always the 1st option.
-
-Additional instruction:
-• Always commit and push changes to the repository when done.
-• After every completed change, always deploy to production before closing the task.
-• Follow the deployment process in /Users/youss/Development/gauntlet/agentforge/DEPLOYMENT_SETUP.md.
-• Assume the user validates every change in production; include clear "How to verify in prod" steps in each handoff.
-• Surface direct checks for the user every time: exact production URL(s), endpoint(s), expected response/value, and what success/failure looks like.
-• Build work by following user stories in /Users/youss/Development/gauntlet/agentforge/docs/user-stories/. Pick a story, execute its steps in order, and report progress by story ID.
-
-Master workspace model:
-• This repo (agentforge) is the coordination workspace for docs, stories, deployment runbooks, and tracking.
-• Product code implementation happens in ./ghostfolio (fork of https://github.com/ghostfolio/ghostfolio.git).
-• Build by user story from ./docs/user-stories/, execute steps in order, and report status by Story ID.
-• Keep planning/eval docs here; keep feature code/tests/PR work in ./ghostfolio.
+## Definition of Done (required checklist)
+A task is only done when all are true:
+- [ ] Story scope completed and status updated in `docs/user-stories/`.
+- [ ] Relevant tests added/updated and passing locally/CI.
+- [ ] Code committed and pushed to remote.
+- [ ] Production deployment completed successfully.
+- [ ] Production verification executed with explicit evidence:
+  - [ ] URL(s) checked
+  - [ ] endpoint(s)/command(s) run
+  - [ ] expected output observed
+- [ ] Rollback path identified for the change.
+- [ ] Handoff includes: Story ID, commit SHA, deployed URL(s), verification result.
