@@ -6,8 +6,10 @@ Deploy-first scaffold for the AgentForge project.
 - `docs/` project planning and assignment docs
 - `backend/` FastAPI API for Railway deployment
 - `frontend/` placeholder web UI for Railway deployment
+- `ghostfolio/` forked product code repository (git submodule)
 - `.github/workflows/ci.yml` CI checks
 - `DEPLOYMENT_SETUP.md` step-by-step platform setup
+- `WORKSPACE.md` master workspace operating model
 
 ## Quickstart (local)
 

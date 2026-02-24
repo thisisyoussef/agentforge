@@ -1,0 +1,3 @@
+[submodule "ghostfolio"]
+	path = ghostfolio
+	url = https://github.com/thisisyoussef/ghostfolio.git

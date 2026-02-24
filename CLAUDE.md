@@ -83,3 +83,10 @@ Ask if I want one of two options:
 - Assume the user validates every change in production; always provide clear "How to verify in prod" steps.
 - Surface direct checks every handoff: exact production URL(s), endpoint(s), expected response/value, and clear success/failure criteria.
 - Build by user story: always reference and follow steps from `/Users/youss/Development/gauntlet/agentforge/docs/user-stories/` and report progress by story ID.
+
+### Master Workspace Model
+
+- This repo (`agentforge`) is the master coordination workspace for docs, stories, deployment runbooks, and tracking.
+- Product implementation happens in `/Users/youss/Development/gauntlet/agentforge/ghostfolio` (fork of `https://github.com/ghostfolio/ghostfolio.git`).
+- Build by executing user stories step-by-step from `/Users/youss/Development/gauntlet/agentforge/docs/user-stories/`.
+- Keep planning/eval/process docs in this repo; keep feature code/tests/PR work in `ghostfolio/`.
