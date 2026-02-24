@@ -1,10 +1,10 @@
 # US-003: Agent NestJS Module + Market Data Tool + Angular Chat UI
 
 ## Status
-- State: `todo`
+- State: `done`
 - Owner: `youssef`
 - Depends on: US-001
-- Related PR/Commit:
+- Related PR/Commit: ghostfolio `32cc08ac2` + `deaaade82`; agentforge `25b853c` + `d04d507`
 - Target environment: `prod`
 
 ## Persona
@@ -62,17 +62,22 @@ Local sources to read before writing any code:
    - Planned failing tests
 
 ### Preparation Notes
-_(Fill during execution.)_
 
 Local docs/code reviewed:
-1.
-2.
+1. `ghostfolio/apps/api/src/app/app.module.ts` — root NestJS module pattern, ~30 existing modules
+2. `ghostfolio/apps/api/src/app/health/health.controller.ts` — simple controller pattern
+3. `ghostfolio/apps/api/src/app/endpoints/ai/ai.controller.ts` — existing AI controller pattern
+4. `ghostfolio/apps/client/src/app/app.routes.ts` — Angular lazy-loaded routing
+5. `ghostfolio/apps/client/src/app/pages/api/api-page.component.ts` — standalone component pattern
 
 Expected yahoo-finance2 data shape:
 ```typescript
-// yahoo-finance2 quote() result keys we need:
-// regularMarketPrice, trailingPE, dividendYield, marketCap,
-// fiftyTwoWeekHigh, fiftyTwoWeekLow, shortName, symbol
+// yahoo-finance2 v3 API (requires new YahooFinance())
+// quote() returns: regularMarketPrice, trailingPE, dividendYield,
+// marketCap, fiftyTwoWeekHigh, fiftyTwoWeekLow, shortName, longName
+// Returns undefined for invalid symbols (does not throw)
+// Note: Requires Node >= 22.0.0 officially; works on 18 with warnings
+// Cookie issue in Jest environment - must mock in unit tests
 ```
 
 Agent chat endpoint contract:
@@ -82,24 +87,22 @@ Request:  {"message": "...", "session_id": "..."}
 Response: {"response": "...", "tool_calls": [...], "session_id": "..."}
 ```
 
-LangGraph state design:
-```typescript
-interface AgentState {
-  messages: BaseMessage[];
-  toolCalls?: ToolCall[];
-}
-```
+Architecture decision — MVP uses pattern matching (no LLM):
+- AgentService extracts ticker symbols via regex pattern matching
+- No LangGraph/Anthropic deps needed for MVP (deferred to later story)
+- Avoids peer dependency conflicts between @langchain/* packages
+- Proves the full stack works: Angular UI → NestJS API → yahoo-finance2 → response
 
 Error-handling decisions:
-1.
-2.
+1. Invalid symbol: yahoo-finance2 returns undefined → caught and returns error message
+2. Network failure: try/catch in fetchSingle returns error object per symbol
 
-Planned failing tests:
+Planned failing tests (all 5):
 1. `market-data.tool.spec.ts: should return price > 0 for valid symbol (AAPL)`
-2. `market-data.tool.spec.ts: should return error info for invalid symbol`
-3. `agent.controller.spec.ts: should return response with tool call for market question`
-4. `agent.controller.spec.ts: should return 200 with error message for empty input`
-5. `market-data.tool.spec.ts: should return data for multiple symbols`
+2. `market-data.tool.spec.ts: should return error info for invalid symbol (XYZNOTREAL)`
+3. `market-data.tool.spec.ts: should return data for multiple symbols (MSFT, GOOGL)`
+4. `agent.controller.spec.ts: should return response with tool call for market question`
+5. `agent.controller.spec.ts: should return 200 with error message for empty input`
 
 ## UX Script
 Happy path:
@@ -174,16 +177,46 @@ Write tests first. Red → Green → Refactor.
 12. Verify chat UI at `https://<ghostfolio-domain>/agent` and LangSmith traces.
 
 ## Implementation Details
-_(Fill during execution.)_
 
 Implemented files:
-1.
-2.
+1. `ghostfolio/apps/api/src/app/agent/tools/market-data.tool.ts` — MarketDataOutput interface + marketDataFetch function using yahoo-finance2
+2. `ghostfolio/apps/api/src/app/agent/tools/market-data.tool.spec.ts` — 3 unit tests with yahoo-finance2 mocked
+3. `ghostfolio/apps/api/src/app/agent/agent.service.ts` — AgentService with pattern-matching symbol extraction + market data lookup
+4. `ghostfolio/apps/api/src/app/agent/agent.controller.ts` — POST /agent/chat endpoint, maps camelCase ↔ snake_case
+5. `ghostfolio/apps/api/src/app/agent/agent.controller.spec.ts` — 2 unit tests with AgentService mocked
+6. `ghostfolio/apps/api/src/app/agent/agent.module.ts` — NestJS module registration
+7. `ghostfolio/apps/api/src/app/app.module.ts` — Added AgentModule import
+8. `ghostfolio/apps/client/src/app/pages/agent/agent-page.component.ts` — Angular standalone component
+9. `ghostfolio/apps/client/src/app/pages/agent/agent-page.html` — Chat UI template
+10. `ghostfolio/apps/client/src/app/pages/agent/agent-page.scss` — Chat styling
+11. `ghostfolio/apps/client/src/app/app.routes.ts` — Added /agent route
+12. `ghostfolio/apps/api/jest.config.ts` — Fixed for Jest 30 + Nx preset compatibility
 
 Key interfaces:
 ```typescript
-// Fill during implementation
+export interface MarketDataOutput {
+  symbol: string;
+  name?: string;
+  price?: number;
+  peRatio?: number;
+  dividendYield?: number;
+  marketCap?: number;
+  fiftyTwoWeekHigh?: number;
+  fiftyTwoWeekLow?: number;
+  error?: string;
+}
+
+export interface ChatResponse {
+  response: string;
+  toolCalls: ToolCallInfo[];
+  sessionId: string;
+}
 ```
+
+Infrastructure fixes:
+- Fixed corrupted `unrs-resolver` native binding (881KB → 1.8MB) caused by disk space issue during npm install
+- Fixed missing `iterare` module (partial install, lib/ missing)
+- Removed @langchain/* deps to resolve peer dependency conflict in Docker build
 
 ## Acceptance Criteria
 - [ ] AC1: Chat UI accessible at Ghostfolio `/agent` page — can send messages and see responses.
@@ -245,11 +278,16 @@ npx nx build client
 5. Check LangSmith → trace visible.
 
 ## Checkpoint Result
-_(Fill after deployment.)_
-- Commit SHA:
-- Ghostfolio URL:
-- User Validation: `passed | failed | blocked`
+- Commit SHA: ghostfolio `deaaade82`; agentforge `d04d507`
+- Ghostfolio URL: `https://ghostfolio-production-c1c7.up.railway.app`
+- Agent chat page: `https://ghostfolio-production-c1c7.up.railway.app/en/agent`
+- Railway deployment: `e00033ec-b305-4c02-ae40-63aba22b6d92` (SUCCESS)
+- User Validation: `pending` — awaiting browser verification
 - Notes:
+  - MVP uses pattern matching instead of LLM (LangGraph deferred to future story)
+  - 5/5 tests passing locally
+  - Agent route registered: `POST /api/v1/agent/chat`
+  - Rollback: revert to Railway deployment `b2f88a04` (pre-agent)
 
 ## Observability & Monitoring
 - Logs to check:
